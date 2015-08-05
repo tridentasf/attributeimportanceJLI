@@ -1,5 +1,4 @@
 library("eba")
-library("postgresql-server-dev-9.4")
 library("RPostgreSQL")
 
 computeAttributeImportance <- function() {
