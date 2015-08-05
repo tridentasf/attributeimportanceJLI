@@ -1,10 +1,11 @@
 library("eba")
 library("postgresql-server-dev-9.4")
+library("RPostgreSQL")
 
 computeAttributeImportance <- function() {
   drv<-dbDriver("PostgreSQL")
- # con<-dbConnect(drv, dbname="JLI", user="postgres", password="postgres", host="localhost", port="5432")
-  con<-dbConnect(drv, dbname="JLI", user="postgres", password="postgres", host="52.3.62.220", port="5432")
+  con<-dbConnect(drv, dbname="JLI", user="postgres", password="postgres", host="localhost", port="5432")
+  #con<-dbConnect(drv, dbname="JLI", user="postgres", password="postgres", host="52.3.62.220", port="5432")
   #need to read out the list of stores and other entities from DB
   entities_query<-"select distinct store_number entity_id, 'store' entity_type from stores where store_number=123"
   eq<-dbSendQuery(con, entities_query)
