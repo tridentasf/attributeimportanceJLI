@@ -1,12 +1,14 @@
 library("eba")
 library("RPostgreSQL")
 
-computeAttributeImportance <- function() {
+computeAttributeImportance <- function(dbname1, user1, password1, host1, port1) {
   drv<-dbDriver("PostgreSQL")
+
   con<-dbConnect(drv, dbname="JLI", user="postgres", password="postgres", host="localhost", port="5432")
-  #con<-dbConnect(drv, dbname="JLI", user="postgres", password="postgres", host="52.3.62.220", port="5432")
+  #con<-dbConnect(drv, dbname=dbname1, user=user1, password=password1, host=host1, port=port1)
+  
   #need to read out the list of stores and other entities from DB
-  entities_query<-"select distinct store_number entity_id, 'store' entity_type from stores where store_number=123"
+  entities_query<-"select distinct store_number entity_id, 'store' entity_type from stores"
   eq<-dbSendQuery(con, entities_query)
   eq_matrix<-as.data.frame(fetch(eq, n=-1))
   dbClearResult(eq)
@@ -22,7 +24,7 @@ computeAttributeImportance <- function() {
       entity_id<-paste("'",entity[1],"'",sep="")
       entity_type<-paste("'",entity[2],"'",sep="")
       
-      tradeoff_query<-paste("select attr1, attr2, attr3, attr4, attr5, attr6, attr7, attr8 from eba_matrix where entity_id=",entity_id,"and entity_type=",entity_type,"order by attrs")
+      tradeoff_query<-paste("select attr1, attr2, attr3, attr4, attr5, attr6, attr7, attr8 from eba_matrix where store_number=",entity_id,"order by attrs")
       
       tq<-dbSendQuery(con, tradeoff_query)
       eba_matrix<-as.data.frame(fetch(tq, n=-1))

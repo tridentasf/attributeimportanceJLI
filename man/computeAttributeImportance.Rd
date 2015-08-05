@@ -8,7 +8,7 @@
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-computeAttributeImportance()
+computeAttributeImportance(dbname1, user1, password1, host1, post1)
 }
 %- maybe also 'usage' for other objects documented here.
 \details{
