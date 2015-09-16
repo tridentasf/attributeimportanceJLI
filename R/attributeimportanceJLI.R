@@ -4,8 +4,8 @@ library("RPostgreSQL")
 computeAttributeImportance <- function(dbname1, user1, password1, host1, port1) {
   drv<-dbDriver("PostgreSQL")
 
-  #con<-dbConnect(drv, dbname="JLI", user="postgres", password="postgres", host="localhost", port="5432")
-  con<-dbConnect(drv, dbname=dbname1, user=user1, password=password1, host=host1, port=port1)
+  con<-dbConnect(drv, dbname="JLI", user="postgres", password="postgres", host="localhost", port="5432")
+  #con<-dbConnect(drv, dbname=dbname1, user=user1, password=password1, host=host1, port=port1)
   
   #read out the list of stores from DB
   store_query<-"select distinct entity_group, entity, district, adi, store_type, store_number from eba_matrix_store"
@@ -37,11 +37,23 @@ computeAttributeImportance <- function(dbname1, user1, password1, host1, port1) 
   eq_matrix<-as.data.frame(fetch(eq, n=-1))
   dbClearResult(eq)
   
-  #read out the list of district from DB
+  #read out the list of entity_group from DB
   entity_group_query<-"select distinct entity_group, entity, district, adi, store_type, store_number from eba_matrix_entity_group"
   egq<-dbSendQuery(con, entity_group_query)
   egq_matrix<-as.data.frame(fetch(egq, n=-1))
   dbClearResult(egq)
+  
+  #read out the list of pilot_types from DB
+  pilot_type_query<-"select distinct entity_group, entity, district, adi, store_type, store_number from eba_matrix_pilot_type"
+  ptq<-dbSendQuery(con, pilot_type_query)
+  ptq_matrix<-as.data.frame(fetch(ptq, n=-1))
+  dbClearResult(ptq)
+  
+  #read out the list of pilot from DB
+  pilot_query<-"select distinct entity_group, entity, district, adi, store_type, store_number from eba_matrix_pilot"
+  pq<-dbSendQuery(con, pilot_query)
+  pq_matrix<-as.data.frame(fetch(pq, n=-1))
+  dbClearResult(pq)
   
   #truncate the eba_results table before recalculating all importances
   truncate_query<-"truncate table eba_results"
@@ -58,7 +70,7 @@ computeAttributeImportance <- function(dbname1, user1, password1, host1, port1) 
       store_number<-paste("'",record[6],"'",sep="")
       
       level<-"eba_matrix_store";
-      if (store_type != "'N/A'" && store_number == "'N/A'")
+      if (adi != "'N/A'" && store_type != "'N/A'" && store_number == "'N/A'")
         level<-"eba_matrix_type"
       else if (adi !="'N/A'" && store_type == "'N/A'" && store_number == "'N/A'")
         level<-"eba_matrix_adi"
@@ -68,6 +80,10 @@ computeAttributeImportance <- function(dbname1, user1, password1, host1, port1) 
         level<-"eba_matrix_entity"
       else if (entity_group != "'N/A'" && entity == "'N/A'" && district =="'N/A'" && adi =="'N/A'" && store_type == "'N/A'" && store_number == "'N/A'")
         level<-"eba_matrix_entity_group"
+      else if (entity_group == "'N/A'" && entity == "'N/A'" && district =="'N/A'" && adi =="'N/A'" && store_type != "'N/A'" && store_number == "'N/A'")
+        level<-"eba_matrix_pilot_type"
+      else if (entity_group == "'N/A'" && entity == "'N/A'" && district =="'N/A'" && adi =="'N/A'" && store_type == "'N/A'" && store_number == "'N/A'")
+        level<-"eba_matrix_pilot"
       
       tradeoff_query<-paste("select attr1, attr2, attr3, attr4, attr5, attr6, attr7, attr8 from",level,"where entity_group=",entity_group,"and entity=",entity,"and district=",district,"and adi=",adi,"and store_type=",store_type,"and store_number=",store_number,"order by attrs")
       
@@ -98,7 +114,10 @@ computeAttributeImportance <- function(dbname1, user1, password1, host1, port1) 
     })
   }
   
+  apply(pq_matrix, 1, computeImportance)
+  apply(ptq_matrix, 1, computeImportance)
   apply(egq_matrix, 1, computeImportance)
+  apply(sq_matrix, 1, computeImportance)
   
   dbDisconnect(con)
 }
