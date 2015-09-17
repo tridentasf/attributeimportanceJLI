@@ -4,8 +4,8 @@ library("RPostgreSQL")
 computeAttributeImportance <- function(dbname1, user1, password1, host1, port1) {
   drv<-dbDriver("PostgreSQL")
 
-  con<-dbConnect(drv, dbname="JLI", user="postgres", password="postgres", host="localhost", port="5432")
-  #con<-dbConnect(drv, dbname=dbname1, user=user1, password=password1, host=host1, port=port1)
+  #con<-dbConnect(drv, dbname="JLI", user="postgres", password="postgres", host="localhost", port="5432")
+  con<-dbConnect(drv, dbname=dbname1, user=user1, password=password1, host=host1, port=port1)
   
   #read out the list of stores from DB
   store_query<-"select distinct entity_group, entity, district, adi, store_type, store_number from eba_matrix_store"
